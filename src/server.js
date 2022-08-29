@@ -36,6 +36,18 @@ var server = smpp.createServer({
       message_id: fakeId()
     }))
   })
+
+	session.on('deliver_sm', function(pdu) {
+		session.send(pdu.response({
+			message_id: fakeId()
+		}))
+  })
+
+	session.on('query_sm', function(pdu) {
+		session.send(pdu.response({
+			message_id: pdu.message_id
+		}))
+  })
 })
 
 server.listen(2775)

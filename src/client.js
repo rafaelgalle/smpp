@@ -27,16 +27,12 @@ var session = smpp.connect({
 						console.log('pdu query sm: ', pdu)
 					})
 				}
-
 			})
 
-			setTimeout(function(){
-				console.log('call deliver_sm')
-				session.deliver_sm({
-				}, function(pdu) {
-					console.log('pdu deliver_sm: ', pdu)
-				})
-			}, 10000)
+			session.on('deliver_sm', (pdu) => {
+				console.log('receive deliver_sm: ', pdu)
+				if(pdu.message_state === MessageStatuses.DELIVERED) console.log('message delivered')
+			})
 		}
 	})
 })

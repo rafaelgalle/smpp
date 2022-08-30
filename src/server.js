@@ -2,7 +2,6 @@ var smpp = require('smpp')
 var server = smpp.createServer({
 	debug: true
 }, function(session) {
-
 	session.on('error', function (err) {
 		console.error(err)
   })
@@ -23,8 +22,7 @@ var server = smpp.createServer({
 				session.send(pdu.response({
 					command_status: smpp.ESME_RBINDFAIL
 				}))
-				session.close()
-				return
+				return session.close()				
 			}
 			session.send(pdu.response())
 			session.resume()
@@ -32,15 +30,18 @@ var server = smpp.createServer({
 	})
 
   session.on('submit_sm', function(pdu) {
+		const messageid= fakeId()
     session.send(pdu.response({
-      message_id: fakeId()
+      message_id: messageid
     }))
-  })
 
-	session.on('deliver_sm', function(pdu) {
-		session.send(pdu.response({
-			message_id: fakeId()
-		}))
+		setTimeout(function(){
+			console.log('send deliver_sm')
+			const pdu = new smpp.PDU('deliver_sm',{
+				message_id: messageid
+			})
+			session.send(pdu.response({}))
+		}, 5000)
   })
 
 	session.on('query_sm', function(pdu) {
@@ -48,6 +49,14 @@ var server = smpp.createServer({
 			message_id: pdu.message_id
 		}))
   })
+
+	setTimeout(function(){
+		console.log('send fake deliver_sm')
+		const pdu = new smpp.PDU('deliver_sm',{
+			message_id: fakeId()
+		})
+		session.send(pdu.response({}))
+	}, 10000)
 })
 
 server.listen(2775)
